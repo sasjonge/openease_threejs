@@ -26,6 +26,10 @@ EASE.Viewer = function(options) {
   this.stopped = true;
   this.animationRequestId = undefined;
   this.lastSelected = undefined;
+
+  this.clock = new THREE.Clock();
+  this.delta = 0;
+  this.interval = 1 / 30;
   
   this.renderer = this.createRenderer(options);
   this.composer = new THREE.EffectComposer(this.renderer);
@@ -259,18 +263,25 @@ EASE.Viewer.prototype.draw = function(){
   if(this.stopped){
     return; // Do nothing if stopped
   }
-  // update the controls
-  this.cameraControls.update();
-  this.renderer.clear();
-  if(this.useShader) {
-    this.composer.render();
+  this.delta += this.clock.getDelta();
+
+  if(this.delta > this.interval) {
+    // update the controls
+    this.cameraControls.update();
+    this.renderer.clear();
+    if(this.useShader) {
+      this.composer.render();
+    }
+    else {
+      this.renderer.render(this.backgroundScene, this.backgroundCamera);
+      this.renderer.render(this.scene, this.camera);
+      this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+      this.renderer.render(this.sceneOrtho, this.cameraOrtho);
+    }
+
+    this.delta = this.delta % this.interval;
   }
-  else {
-    this.renderer.render(this.backgroundScene, this.backgroundCamera);
-    this.renderer.render(this.scene, this.camera);
-    this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
-    this.renderer.render(this.sceneOrtho, this.cameraOrtho);
-  }
+
   // draw the frame
   this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
 };
