@@ -1,5 +1,10 @@
 'use strict';
 
+var THREE = require('three');
+
+var ShaderPass = require('./ShaderPass.js');
+var CelShader = require('../shader/SSAOShader.js');
+
 /**
  * Screen-space ambient occlusion pass.
  *
@@ -19,16 +24,8 @@
  * @author tentone
  * @class SSAOPass
  */
-THREE.SSAOPass = function ( scene, camera, width, height ) {
-
-	if ( THREE.SSAOShader === undefined) {
-
-		console.warn( 'THREE.SSAOPass depends on THREE.SSAOShader' );
-		return new THREE.ShaderPass();
-
-	}
-
-	THREE.ShaderPass.call( this, THREE.SSAOShader );
+var SSAOPass = function ( scene, camera, width, height ) {
+	ShaderPass.call( this, SSAOShader );
 
 	this.width = ( width !== undefined ) ? width : 512;
 	this.height = ( height !== undefined ) ? height : 256;
@@ -85,7 +82,7 @@ THREE.SSAOPass = function ( scene, camera, width, height ) {
 	});
 }
 
-THREE.SSAOPass.prototype = Object.create( THREE.ShaderPass.prototype );
+SSAOPass.prototype = Object.create( ShaderPass.prototype );
 
 /**
  * Render using this pass.
@@ -97,7 +94,7 @@ THREE.SSAOPass.prototype = Object.create( THREE.ShaderPass.prototype );
  * @param {Number} delta Delta time in milliseconds.
  * @param {Boolean} maskActive Not used in this pass.
  */
-THREE.SSAOPass.prototype.render = function( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+SSAOPass.prototype.render = function( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 
 	//Render depth into depthRenderTarget
 	this.scene2.overrideMaterial = this.depthMaterial;
@@ -108,7 +105,7 @@ THREE.SSAOPass.prototype.render = function( renderer, writeBuffer, readBuffer, d
 
 
 	//SSAO shaderPass
-	THREE.ShaderPass.prototype.render.call( this, renderer, writeBuffer, readBuffer, delta, maskActive );
+	ShaderPass.prototype.render.call( this, renderer, writeBuffer, readBuffer, delta, maskActive );
 
 };
 
@@ -118,7 +115,7 @@ THREE.SSAOPass.prototype.render = function( renderer, writeBuffer, readBuffer, d
  * @method setScene
  * @param {Scene} scene
  */
-THREE.SSAOPass.prototype.setScene = function(scene) {
+SSAOPass.prototype.setScene = function(scene) {
 	
 	this.scene2 = scene;
 
@@ -130,7 +127,7 @@ THREE.SSAOPass.prototype.setScene = function(scene) {
  * @method setCamera
  * @param {Camera} camera
  */
-THREE.SSAOPass.prototype.setCamera = function( camera ) {
+SSAOPass.prototype.setCamera = function( camera ) {
 
 	this.camera2 = camera;
 
@@ -146,7 +143,7 @@ THREE.SSAOPass.prototype.setCamera = function( camera ) {
  * @param {Number} width
  * @param {Number} height
  */
-THREE.SSAOPass.prototype.setSize = function( width, height ) {
+SSAOPass.prototype.setSize = function( width, height ) {
 
 	this.width = width;
 	this.height = height;
@@ -155,3 +152,5 @@ THREE.SSAOPass.prototype.setSize = function( width, height ) {
 	this.depthRenderTarget.setSize( this.width, this.height );
 
 };
+
+module.exports = SSAOPass;

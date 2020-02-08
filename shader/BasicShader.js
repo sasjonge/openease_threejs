@@ -4,7 +4,7 @@
  * Simple test shader
  */
 
-THREE.BasicShader = {
+module.exports = {
 
 	uniforms: {},
 

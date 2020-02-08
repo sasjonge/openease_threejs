@@ -1,50 +1,48 @@
 // 'use strict';
 
-EASE.CelShadingPass = function (scene, camera) {
-	
-	if ( EASE.CelShader === undefined) {
-		console.warn( 'EASE.CelShadingPass depends on EASE.CelShader' );
-		return new THREE.ShaderPass();
-	}
-	
+var THREE = require('three');
+var RenderPass = require('./RenderPass.js');
+var CelShader = require('../shader/CelShader.js');
+
+var CelShadingPass = function (scene, camera) {
 	var cartoonMaterial = new THREE.ShaderMaterial( {
 		lights: true,
 		uniforms: Object.assign(
 			THREE.UniformsLib[ "common" ],
 			THREE.UniformsLib[ "lights" ],
-			EASE.CelShader.uniforms ),
-		vertexShader: EASE.CelShader.vertexShader,
-		fragmentShader: EASE.CelShader.fragmentShader
+			CelShader.uniforms ),
+		vertexShader: CelShader.vertexShader,
+		fragmentShader: CelShader.fragmentShader
 	});
 	
-	THREE.RenderPass.call(this, scene, camera, cartoonMaterial);
+	RenderPass.call(this, scene, camera, cartoonMaterial);
 	
 // 	this.markers = [];
 }
 
-EASE.CelShadingPass.prototype = Object.create( THREE.RenderPass.prototype );
+CelShadingPass.prototype = Object.create( RenderPass.prototype );
 
-EASE.CelShadingPass.prototype.addMarker = function(marker,node) {
+CelShadingPass.prototype.addMarker = function(marker,node) {
 // 	var cartoonMaterial = new THREE.ShaderMaterial( {
 // 		lights: true,
 // 		uniforms: Object.assign(
 // 			THREE.UniformsLib[ "common" ],
 // 			THREE.UniformsLib[ "lights" ],
-// 			EASE.CelShader.uniforms ),
-// 		vertexShader: EASE.CelShader.vertexShader,
-// 		fragmentShader: EASE.CelShader.fragmentShader
+// 			CelShader.uniforms ),
+// 		vertexShader: CelShader.vertexShader,
+// 		fragmentShader: CelShader.fragmentShader
 // 	});
 // 	this.markers.push({marker: marker, node: node, material: cartoonMaterial});
 };
 
-EASE.CelShadingPass.prototype.removeMarker = function(marker,node) {
+CelShadingPass.prototype.removeMarker = function(marker,node) {
 // 	var index = this.markers.indexOf({marker: marker, node: node}); // TODO not sure if this works
 // 	if (index > -1) {
 // 		this.markers.splice(index, 1);
 // 	}
 };
 
-EASE.CelShadingPass.prototype.render = function( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+CelShadingPass.prototype.render = function( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 	
 	// TODO: use only one material and use scene.overrideMaterial
 // 	for(var i=0; i<this.markers.length; i++) {
@@ -62,7 +60,7 @@ EASE.CelShadingPass.prototype.render = function( renderer, writeBuffer, readBuff
 // 		});
 // 	}
 	
-	THREE.RenderPass.prototype.render.call(this, renderer, writeBuffer, readBuffer, delta, maskActive);
+	RenderPass.prototype.render.call(this, renderer, writeBuffer, readBuffer, delta, maskActive);
 	
 // 	for(var i=0; i<this.markers.length; i++) {
 // 		var x = this.markers[i];
@@ -75,3 +73,5 @@ EASE.CelShadingPass.prototype.render = function( renderer, writeBuffer, readBuff
 	
 // 	this.scene.traverse(unsetComicColor);
 };
+
+module.exports = CelShadingPass;

@@ -1,5 +1,5 @@
 
-EASE.OutlineShader = {
+module.exports = {
 
 	uniforms: {
 

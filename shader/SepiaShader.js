@@ -6,7 +6,7 @@
  * https://github.com/evanw/glfx.js
  */
 
-THREE.SepiaShader = {
+module.exports = {
 
 	uniforms: {
 

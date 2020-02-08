@@ -2,14 +2,16 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.TexturePass = function ( map, opacity ) {
+var THREE = require('three');
 
-	THREE.Pass.call( this );
+var Pass = require('./Pass.js');
+var CopyShader = require('../shader/CopyShader.js');
 
-	if ( THREE.CopyShader === undefined )
-		console.error( "THREE.TexturePass relies on THREE.CopyShader" );
+var TexturePass = function ( map, opacity ) {
 
-	var shader = THREE.CopyShader;
+	Pass.call( this );
+
+	var shader = CopyShader;
 
 	this.map = map;
 	this.opacity = ( opacity !== undefined ) ? opacity : 1.0;
@@ -37,9 +39,9 @@ THREE.TexturePass = function ( map, opacity ) {
 
 };
 
-THREE.TexturePass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
+TexturePass.prototype = Object.assign( Object.create( Pass.prototype ), {
 
-	constructor: THREE.TexturePass,
+	constructor: TexturePass,
 
 	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 
@@ -58,3 +60,5 @@ THREE.TexturePass.prototype = Object.assign( Object.create( THREE.Pass.prototype
 	}
 
 } );
+
+module.exports = TexturePass;

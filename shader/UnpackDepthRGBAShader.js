@@ -5,7 +5,7 @@
  * - show RGBA encoded depth as monochrome color
  */
 
-THREE.UnpackDepthRGBAShader = {
+module.exports = {
 
 	uniforms: {
 

@@ -4,7 +4,7 @@
  * Full-screen textured quad shader
  */
 
-THREE.CopyShader = {
+module.exports = {
 
 	uniforms: {
 

@@ -8,7 +8,9 @@
  * http://www.glge.org/demos/fxaa/
  */
 
-THREE.FXAAShader = {
+var THREE = require('three');
+
+module.exports = {
 
 	uniforms: {
 

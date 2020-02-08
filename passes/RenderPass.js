@@ -2,9 +2,11 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clearAlpha ) {
+var Pass = require('./Pass.js');
 
-	THREE.Pass.call( this );
+var RenderPass = function ( scene, camera, overrideMaterial, clearColor, clearAlpha ) {
+
+	Pass.call( this );
 
 	this.scene = scene;
 	this.camera = camera;
@@ -20,9 +22,9 @@ THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clear
 
 };
 
-THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
+RenderPass.prototype = Object.assign( Object.create( Pass.prototype ), {
 
-	constructor: THREE.RenderPass,
+	constructor: RenderPass,
 
 	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 
@@ -61,3 +63,5 @@ THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype 
 	}
 
 } );
+
+module.exports = RenderPass;

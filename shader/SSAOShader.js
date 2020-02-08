@@ -11,7 +11,9 @@
  * - refactoring and optimizations
  */
 
-THREE.SSAOShader = {
+var THREE = require('three');
+
+module.exports = {
 
 	uniforms: {
 

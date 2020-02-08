@@ -2,9 +2,13 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.ShaderPass = function ( shader, textureID ) {
+var THREE = require('three');
 
-	THREE.Pass.call( this );
+var Pass = require('./Pass.js');
+
+var ShaderPass = function ( shader, textureID ) {
+
+	Pass.call( this );
 
 	this.textureID = ( textureID !== undefined ) ? textureID : "tDiffuse";
 
@@ -38,9 +42,9 @@ THREE.ShaderPass = function ( shader, textureID ) {
 
 };
 
-THREE.ShaderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
+ShaderPass.prototype = Object.assign( Object.create( Pass.prototype ), {
 
-	constructor: THREE.ShaderPass,
+	constructor: ShaderPass,
 
 	render: function( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 
@@ -65,3 +69,5 @@ THREE.ShaderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype 
 	}
 
 } );
+
+module.exports = ShaderPass;
