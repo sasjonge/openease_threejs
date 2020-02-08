@@ -1,0 +1,22 @@
+{
+  "name": "@openease/canvas-three",
+  "version": "1.0.0",
+  "description": "Canvas visualization node module of openEASE",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \\\"Warning: no test specified\\\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ease-crc/openease_threejs.git"
+  },
+  "author": "Daniel Beßler",
+  "license": "LGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/ease-crc/openease_threejs/issues"
+  },
+  "homepage": "https://github.com/ease-crc/openease_threejs#readme",
+  "dependencies": {
+    "ros3d": "git://github.com/RobotWebTools/ros3djs.git#develop"
+  }
+}
