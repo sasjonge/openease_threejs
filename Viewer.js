@@ -284,6 +284,18 @@ Viewer.prototype.draw = function(){
   if(this.delta > this.interval) {
     // update the controls
     this.cameraControls.update();
+    this.render();
+    this.delta = this.delta % this.interval;
+  }
+
+  // draw the frame
+  this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
+};
+
+/**
+ * Renders the associated scene to the viewer.
+ */
+Viewer.prototype.render = function(){
     this.renderer.clear();
     if(this.useShader) {
       this.composer.render();
@@ -294,12 +306,6 @@ Viewer.prototype.draw = function(){
       this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
       this.renderer.render(this.sceneOrtho, this.cameraOrtho);
     }
-
-    this.delta = this.delta % this.interval;
-  }
-
-  // draw the frame
-  this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
 };
 
 /**
