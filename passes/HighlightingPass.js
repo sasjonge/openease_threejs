@@ -1,5 +1,8 @@
 
-EASE.HighlightingPass = function(scene, camera, highlighter) {
+var THREE = require('three');
+
+var HighlightingPass = function(scene, camera, highlighter)
+{
     this.scene = scene;
     this.camera = camera;
     this.highlighter = highlighter;
@@ -10,8 +13,11 @@ EASE.HighlightingPass = function(scene, camera, highlighter) {
     this.renderToScreen = true;
 };
 
-EASE.HighlightingPass.prototype.setSize = function(width,height) {};
-EASE.HighlightingPass.prototype.render =
+HighlightingPass.prototype.setSize = function(width,height)
+{
+};
+
+HighlightingPass.prototype.render =
     function (renderer, writeBuffer, readBuffer, delta) {
   // TODO: pull request for ros3djs to include readBuffer parameter in highlighter.renderHighlights
   var rendererProxy = {
@@ -21,3 +27,5 @@ EASE.HighlightingPass.prototype.render =
   };
   this.highlighter.renderHighlights(this.scene, rendererProxy, this.camera);
 };
+
+module.exports = HighlightingPass;

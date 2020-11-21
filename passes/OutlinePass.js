@@ -1,19 +1,18 @@
 'use strict';
 
-EASE.OutlinePass = function ( scene, camera, width, height ) {
+var THREE = require('three');
+var ShaderPass = require('./ShaderPass.js');
+var OutlineShader = require('../shader/OutlineShader.js');
+
+var OutlinePass = function ( scene, camera, width, height ) {
 	
-	if ( EASE.OutlineShader === undefined) {
-		console.warn( 'EASE.OutlinePass depends on EASE.OutlineShader' );
-		return new THREE.ShaderPass();
-	}
-	
-	THREE.ShaderPass.call(this, {
-		'fragmentShader': EASE.OutlineShader.fragmentShader,
-		'vertexShader':   EASE.OutlineShader.vertexShader,
+	ShaderPass.call(this, {
+		'fragmentShader': OutlineShader.fragmentShader,
+		'vertexShader':   OutlineShader.vertexShader,
 		'uniforms':       Object.assign(
 			THREE.UniformsLib['common'],
 			THREE.UniformsLib['lights'],
-			EASE.OutlineShader.uniforms
+			OutlineShader.uniforms
 		)
 	});
 	
@@ -43,9 +42,9 @@ EASE.OutlinePass = function ( scene, camera, width, height ) {
 	this.scene2 = scene;
 }
 
-EASE.OutlinePass.prototype = Object.create( THREE.ShaderPass.prototype );
+OutlinePass.prototype = Object.create( ShaderPass.prototype );
 
-EASE.OutlinePass.prototype.render = function( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+OutlinePass.prototype.render = function( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 	var oldAutoClear = renderer.autoClear;
 	renderer.autoClear = true;
 	
@@ -67,12 +66,14 @@ EASE.OutlinePass.prototype.render = function( renderer, writeBuffer, readBuffer,
 // 	this.quad.material = this.material;
 // 	renderer.render(this.scene, this.camera);
 		
-	THREE.ShaderPass.prototype.render.call(this, renderer, writeBuffer, readBuffer, delta, maskActive);
+	ShaderPass.prototype.render.call(this, renderer, writeBuffer, readBuffer, delta, maskActive);
 };
 
-EASE.OutlinePass.prototype.setSize = function(width, height) {
+OutlinePass.prototype.setSize = function(width, height) {
 	this.width = width;
 	this.height = height;
 	this.tDepth.setSize(this.width, this.height);
 	this.tNormal.setSize(this.width, this.height);
 };
+
+module.exports = OutlinePass;

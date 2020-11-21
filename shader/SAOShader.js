@@ -1,4 +1,7 @@
-THREE.SAOShader = {
+
+var THREE = require('three');
+
+module.exports = {
 	defines: {
 		'NUM_SAMPLES': 7,
 		'NUM_RINGS': 4,

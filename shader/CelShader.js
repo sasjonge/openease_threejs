@@ -1,5 +1,7 @@
 
-EASE.CelShader = {
+var THREE = require('three');
+
+module.exports = {
 
 	uniforms: {
 

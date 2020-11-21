@@ -4,6 +4,22 @@
  * @author Jihoon Lee - jihoonlee.in@gmail.com
  */
 
+var ROS3D = require('ros3d');
+var THREE = require('three');
+
+var ShaderPass = require('./passes/ShaderPass.js');
+var RenderPass = require('./passes/RenderPass.js');
+var CelShadingPass = require('./passes/CelShadingPass.js');
+var HighlightingPass = require('./passes/HighlightingPass.js');
+var OutlinePass = require('./passes/OutlinePass.js');
+var SAOPass = require('./passes/SAOPass.js');
+var SSAOPass = require('./passes/SSAOPass.js');
+
+var CopyShader = require('./shader/CopyShader.js');
+var FXAAShader = require('./shader/FXAAShader.js');
+
+var EffectComposer = require('./EffectComposer.js');
+
 /**
  * A Viewer can be used to render an interactive 3D scene to a HTML5 canvas.
  *
@@ -17,7 +33,7 @@
  *  * antialias (optional) - if antialiasing should be used
  *  * intensity (optional) - the lighting intensity setting to use
  */
-EASE.Viewer = function(options) {
+var Viewer = function(options) {
   options = options || {};
   var that = this;
   this.client = options.client;
@@ -32,7 +48,7 @@ EASE.Viewer = function(options) {
   this.interval = 1 / 30;
   
   this.renderer = this.createRenderer(options);
-  this.composer = new THREE.EffectComposer(this.renderer);
+  this.composer = new EffectComposer(this.renderer);
   // create scene node + camera + lights
   this.createScene(options);
   if( options.sun ) {
@@ -59,8 +75,8 @@ EASE.Viewer = function(options) {
   this.createBGScene(options);
 
   // add the renderer to the page
-  options.div.appendChild(this.renderer.domElement);
-  options.div.addEventListener('dblclick', function(ev){
+  options.div.append(this.renderer.domElement);
+  options.div.on('dblclick', function(ev){
       if(that.lastEvent === ev) return;
       that.client.unselectMarker();
       that.lastEvent = ev;
@@ -74,7 +90,7 @@ EASE.Viewer = function(options) {
   this.start();
 };
 
-EASE.Viewer.prototype.createRenderer = function(options){
+Viewer.prototype.createRenderer = function(options){
   var background = options.background || '#111111';
   var renderer = new THREE.WebGLRenderer({ antialias: options.antialias });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -86,7 +102,7 @@ EASE.Viewer.prototype.createRenderer = function(options){
   return renderer;
 };
 
-EASE.Viewer.prototype.createScene = function(options){
+Viewer.prototype.createScene = function(options){
   var ambient = options.ambient || '#555555';
   var cameraPosition = options.camera.position || {x : 3, y : 3, z : 3};
   var cameraZoomSpeed = options.camera.zoomSpeed || 0.5;
@@ -119,7 +135,7 @@ EASE.Viewer.prototype.createScene = function(options){
   this.highlighter = new ROS3D.Highlighter({mouseHandler : this.mouseHandler});
 };
 
-EASE.Viewer.prototype.createHUDScene = function(options){
+Viewer.prototype.createHUDScene = function(options){
   // create the HUD scene for GUI elements 
   this.sceneOrtho = new THREE.Scene();
   // create the global camera with orthogonal projection
@@ -131,13 +147,13 @@ EASE.Viewer.prototype.createHUDScene = function(options){
   this.cameraOrtho.position.z = 10;
 };
 
-EASE.Viewer.prototype.createBGScene = function(){
+Viewer.prototype.createBGScene = function(){
   this.backgroundScene = new THREE.Scene();
   this.backgroundCamera = new THREE.Camera();
   this.backgroundScene.add(this.backgroundCamera); // TODO is this required?
 };
 
-EASE.Viewer.prototype.createSunLight = function(options){
+Viewer.prototype.createSunLight = function(options){
   var intensity = options.sun.intensity || 0.66;
   var color = options.sun.color || '#eeeeee';
   var pos = options.sun.pos || [-1, 0.5, 3.0];
@@ -161,7 +177,7 @@ EASE.Viewer.prototype.createSunLight = function(options){
   return sun;
 };
 
-EASE.Viewer.prototype.createSpotLight = function(options){
+Viewer.prototype.createSpotLight = function(options){
   var color = options.spot.color || '#ffffbb';
   var intensity = options.spot.intensity || 0.9;
   var pos = options.spot.pos || [0, 0, 6];
@@ -183,58 +199,58 @@ EASE.Viewer.prototype.createSpotLight = function(options){
   return spot;
 };
 
-EASE.Viewer.prototype.setSimplePipeline = function(width, height){
+Viewer.prototype.setSimplePipeline = function(width, height){
   this.composer.passes = [];
-//   this.composer.addPass(new THREE.RenderPass(this.backgroundScene, this.backgroundCamera));
-  this.composer.addPass(new THREE.RenderPass(this.scene, this.camera));
-  this.composer.addPass(new EASE.HighlightingPass(this.scene, this.camera, this.highlighter));
+//   this.composer.addPass(new RenderPass(this.backgroundScene, this.backgroundCamera));
+  this.composer.addPass(new RenderPass(this.scene, this.camera));
+  this.composer.addPass(new HighlightingPass(this.scene, this.camera, this.highlighter));
   this.addFXAAPass(width, height, true);
-//   this.composer.addPass(new THREE.RenderPass(this.sceneOrtho, this.cameraOrtho));
+//   this.composer.addPass(new RenderPass(this.sceneOrtho, this.cameraOrtho));
 };
 
-EASE.Viewer.prototype.setComicPipeline = function(width, height){
-  var outlinePass = new EASE.OutlinePass(this.scene, this.camera, width, height);
+Viewer.prototype.setComicPipeline = function(width, height){
+  var outlinePass = new OutlinePass(this.scene, this.camera, width, height);
   this.composer.passes = [];
-  this.composer.addPass(new THREE.RenderPass(this.scene, this.camera, outlinePass.mNormal));
-  this.composer.addPass(new THREE.RenderPass(this.scene, this.camera, outlinePass.mDepth));
-  this.composer.addPass(new EASE.CelShadingPass(this.scene, this.camera));
-//   this.composer.addPass(new EASE.HighlightingPass(this.scene, this.camera, this.highlighter));
+  this.composer.addPass(new RenderPass(this.scene, this.camera, outlinePass.mNormal));
+  this.composer.addPass(new RenderPass(this.scene, this.camera, outlinePass.mDepth));
+  this.composer.addPass(new CelShadingPass(this.scene, this.camera));
+//   this.composer.addPass(new HighlightingPass(this.scene, this.camera, this.highlighter));
   this.composer.addPass(outlinePass);
   this.addFXAAPass(width, height, true);
 };
 
-EASE.Viewer.prototype.addBlitPass = function(){
-  var blit = new THREE.ShaderPass(THREE.CopyShader)
+Viewer.prototype.addBlitPass = function(){
+  var blit = new ShaderPass(CopyShader)
   blit.renderToScreen = true;
   this.composer.addPass(blit);
 };
 
-EASE.Viewer.prototype.addFXAAPass = function(width, height, renderToScreen){
-  this.fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
+Viewer.prototype.addFXAAPass = function(width, height, renderToScreen){
+  this.fxaaPass = new ShaderPass(FXAAShader);
   this.fxaaPass.uniforms['resolution'].value.set(1.0/width, 1.0/height);
   this.fxaaPass.renderToScreen = renderToScreen;
   this.composer.addPass( this.fxaaPass );
 };
 
-EASE.Viewer.prototype.addSSAOPass = function(width, height, renderToScreen){
-  this.ssaoPass = new THREE.SSAOPass(this.scene, this.camera, width, height);
+Viewer.prototype.addSSAOPass = function(width, height, renderToScreen){
+  this.ssaoPass = new SSAOPass(this.scene, this.camera, width, height);
   this.ssaoPass.renderToScreen = renderToScreen;
   this.composer.addPass( this.ssaoPass );
 };
 
-EASE.Viewer.prototype.addSAOPass = function(renderToScreen){
-  var saoPass = new THREE.SAOPass(this.scene, this.camera, true, false, {x: 256, y: 256});
+Viewer.prototype.addSAOPass = function(renderToScreen){
+  var saoPass = new SAOPass(this.scene, this.camera, true, false, {x: 256, y: 256});
   this.saoPass = saoPass;
   saoPass.renderToScreen = renderToScreen;
   this.composer.addPass(saoPass);
   if(this.showDatgui) {
     var saoFolder = gui.addFolder('SAO');
     saoFolder.add( saoPass.params, 'output', {
-      'Beauty': THREE.SAOPass.OUTPUT.Beauty,
-      'Beauty+SAO': THREE.SAOPass.OUTPUT.Default,
-      'SAO': THREE.SAOPass.OUTPUT.SAO,
-      'Depth': THREE.SAOPass.OUTPUT.Depth,
-      'Normal': THREE.SAOPass.OUTPUT.Normal
+      'Beauty': SAOPass.OUTPUT.Beauty,
+      'Beauty+SAO': SAOPass.OUTPUT.Default,
+      'SAO': SAOPass.OUTPUT.SAO,
+      'Depth': SAOPass.OUTPUT.Depth,
+      'Normal': SAOPass.OUTPUT.Normal
     } ).onChange( function ( value ) { saoPass.params.output = parseInt( value ); } );
     saoFolder.add( saoPass.params, 'saoBias', - 1, 1 );
     saoFolder.add( saoPass.params, 'saoIntensity', 0, 1 );
@@ -251,7 +267,7 @@ EASE.Viewer.prototype.addSAOPass = function(renderToScreen){
 /**
  *  Start the render loop
  */
-EASE.Viewer.prototype.start = function(){
+Viewer.prototype.start = function(){
   this.stopped = false;
   this.draw();
 };
@@ -259,7 +275,7 @@ EASE.Viewer.prototype.start = function(){
 /**
  * Renders the associated scene to the viewer.
  */
-EASE.Viewer.prototype.draw = function(){
+Viewer.prototype.draw = function(){
   if(this.stopped){
     return; // Do nothing if stopped
   }
@@ -268,6 +284,18 @@ EASE.Viewer.prototype.draw = function(){
   if(this.delta > this.interval) {
     // update the controls
     this.cameraControls.update();
+    this.render();
+    this.delta = this.delta % this.interval;
+  }
+
+  // draw the frame
+  this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
+};
+
+/**
+ * Renders the associated scene to the viewer.
+ */
+Viewer.prototype.render = function(){
     this.renderer.clear();
     if(this.useShader) {
       this.composer.render();
@@ -278,18 +306,12 @@ EASE.Viewer.prototype.draw = function(){
       this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
       this.renderer.render(this.sceneOrtho, this.cameraOrtho);
     }
-
-    this.delta = this.delta % this.interval;
-  }
-
-  // draw the frame
-  this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
 };
 
 /**
  *  Stop the render loop
  */
-EASE.Viewer.prototype.stop = function(){
+Viewer.prototype.stop = function(){
   if(!this.stopped){
     // Stop animation render loop
     cancelAnimationFrame(this.animationRequestId);
@@ -303,7 +325,7 @@ EASE.Viewer.prototype.stop = function(){
  * @param object - the THREE Object3D to add
  * @param selectable (optional) - if the object should be added to the selectable list
  */
-EASE.Viewer.prototype.addObject = function(object, selectable) {
+Viewer.prototype.addObject = function(object, selectable) {
   if (selectable) {
     this.selectableObjects.add(object);
   } else {
@@ -317,7 +339,7 @@ EASE.Viewer.prototype.addObject = function(object, selectable) {
  * @param width - new width value
  * @param height - new height value
  */
-EASE.Viewer.prototype.resize = function(width, height) {
+Viewer.prototype.resize = function(width, height) {
   this.camera.width = width;
   this.camera.height = height;
   this.camera.aspect = width / height;
@@ -338,7 +360,7 @@ EASE.Viewer.prototype.resize = function(width, height) {
   if(this.fxaaPass) this.fxaaPass.uniforms['resolution'].value.set(1.0/width, 1.0/height);
 };
 
-EASE.Viewer.prototype.addMarker = function(marker,node) {
+Viewer.prototype.addMarker = function(marker,node) {
   if(marker.isBackgroundMarker) {
     this.backgroundScene.add(node);
   }
@@ -367,7 +389,7 @@ EASE.Viewer.prototype.addMarker = function(marker,node) {
   };
 };
 
-EASE.Viewer.prototype.removeMarker = function(marker, node) {
+Viewer.prototype.removeMarker = function(marker, node) {
   if(marker.isBackgroundMarker) {
     this.backgroundScene.remove(node);
   }
@@ -384,7 +406,7 @@ EASE.Viewer.prototype.removeMarker = function(marker, node) {
   this.client.removeMarker(marker);
 };
 
-EASE.Viewer.prototype.addEventListener = function(marker) {
+Viewer.prototype.addEventListener = function(marker) {
   var that = this;
   var addEventListenerRecursive = function(child) {
     child.addEventListener('dblclick', function(ev){
@@ -414,9 +436,11 @@ EASE.Viewer.prototype.addEventListener = function(marker) {
   marker.traverse(addEventListenerRecursive);
 };
 
-EASE.Viewer.prototype.highlight = function(node) {
+Viewer.prototype.highlight = function(node) {
     this.highlighter.hoverObjs[node.uuid] = node;
 };
-EASE.Viewer.prototype.unhighlight = function(node) {
+Viewer.prototype.unhighlight = function(node) {
     delete this.highlighter.hoverObjs[node.uuid];
 };
+
+module.exports = Viewer;
