@@ -43,9 +43,14 @@ var Viewer = function(options) {
   this.animationRequestId = undefined;
   this.lastSelected = undefined;
 
+  this.on_start_loading = options.on_start_loading || function(){};
+  this.on_finished_loading = options.on_finished_loading || function(){};
+
   this.clock = new THREE.Clock();
   this.delta = 0;
   this.interval = 1 / 30;
+
+  this.counter_in = 0;
   
   this.renderer = this.createRenderer(options);
   this.composer = new EffectComposer(this.renderer);
@@ -361,6 +366,13 @@ Viewer.prototype.resize = function(width, height) {
 };
 
 Viewer.prototype.addMarker = function(marker,node) {
+  if(marker.msgMesh) {
+    // HACK: need to notify about when done with mesh loading
+    this.counter_in += 1;
+    if(this.counter_in === 1) {
+      this.on_start_loading();
+    }
+  }
   if(marker.isBackgroundMarker) {
     this.backgroundScene.add(node);
   }
@@ -376,7 +388,8 @@ Viewer.prototype.addMarker = function(marker,node) {
   }
   node.visible = true;
   this.composer.addMarker(marker,node);
-  
+
+  var that = this;
   // HACK Collada loader might not be finished loading.
   //      Overwrite `add` function to get notified :/
   marker.children[0].add_old = marker.children[0].add;
@@ -386,6 +399,12 @@ Viewer.prototype.addMarker = function(marker,node) {
       x.receiveShadow = true;
     });
     this.add_old(child);
+
+    // HACK: need to notify about when done with mesh loading
+    that.counter_in -= 1;
+    if(that.counter_in === 0) {
+      that.on_finished_loading();
+    }
   };
 };
 
