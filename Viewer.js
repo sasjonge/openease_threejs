@@ -448,12 +448,6 @@ Viewer.prototype.addEventListener = function(marker) {
       ev.domEvent.preventDefault();
       ev.domEvent.stopPropagation();
     }, false);
-    child.addEventListener('contextmenu', function(ev){
-      if(that.lastEvent === ev)
-        return;
-      that.client.showMarkerMenu(marker);
-      that.lastEvent = ev;
-    });
     child.addEventListener('mousewheel', function(ev){
         ev.currentTarget = that.cameraControls;
         ev.currentTarget.dispatchEvent(ev);
