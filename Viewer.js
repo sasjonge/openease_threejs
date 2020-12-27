@@ -63,14 +63,13 @@ var Viewer = function(options) {
         this.scene.add( new THREE.CameraHelper( sunLight.shadow.camera ) );
     }
   }
-  if( options.spot ) {
-    var spotLight = this.createSpotLight(options);
+  for(var i=0; i<options.spots.length; i++) {
+    var spotLight = this.createSpotLight(options.spots[i]);
     this.scene.add(spotLight);
-//   this.scene.add( spotLight.target );
-    if( options.spot.debug ) {
+    if( options.spots[i].debug ) {
       this.scene.add( new THREE.SpotLightHelper( spotLight ) );
     }
-    if( options.spot.shadow && options.spot.shadow.debug ) {
+    if( options.spots[i].shadow && options.spots[i].shadow.debug ) {
         this.scene.add( new THREE.CameraHelper( spotLight.shadow.camera ) );
     }
   }
@@ -108,9 +107,11 @@ Viewer.prototype.createRenderer = function(options){
 };
 
 Viewer.prototype.createScene = function(options){
-  var ambient = options.ambient || '#555555';
+  var ambient = options.ambient || '#959595';
   var cameraPosition = options.camera.position || {x : 3, y : 3, z : 3};
-  var cameraZoomSpeed = options.camera.zoomSpeed || 0.5;
+  var cameraZoomSpeed = options.camera.zoomSpeed || 1.0;
+  var cameraRotateSpeed = options.camera.rotateSpeed || 1.0;
+  var cameraAutoRotate = options.camera.autoRotate || false;
   var near = options.camera.near || 0.05;
   var far = options.camera.far || 100;
   
@@ -127,9 +128,12 @@ Viewer.prototype.createScene = function(options){
   this.camera.position.z = cameraPosition.z;
   this.cameraControls = new ROS3D.OrbitControls({
     scene : this.scene,
-    camera : this.camera
+    camera : this.camera,
+    userZoomSpeed: cameraZoomSpeed,
+    userRotateSpeed: cameraRotateSpeed,
+    autoRotate: cameraAutoRotate
   });
-  this.cameraControls.userZoomSpeed = cameraZoomSpeed;
+  //
   this.mouseHandler = new ROS3D.MouseHandler({
     renderer : this.renderer,
     camera : this.camera,
@@ -159,8 +163,8 @@ Viewer.prototype.createBGScene = function(){
 };
 
 Viewer.prototype.createSunLight = function(options){
-  var intensity = options.sun.intensity || 0.66;
-  var color = options.sun.color || '#eeeeee';
+  var intensity = options.sun.intensity || 0.4;
+  var color = options.sun.color || '#f1e9de';
   var pos = options.sun.pos || [-1, 0.5, 3.0];
   
   var sun = new THREE.DirectionalLight(
@@ -170,31 +174,38 @@ Viewer.prototype.createSunLight = function(options){
   if(options.sun.shadow) {
       sun.castShadow = true;
       // TODO: make this configurable
-      sun.shadow.mapSize.width = 1024;
-      sun.shadow.mapSize.height = 1024;
+      sun.shadow.mapSize.width = 2048;
+      sun.shadow.mapSize.height = 2048;
       sun.shadow.camera.near = 1;
       sun.shadow.camera.far = 4;
-      sun.shadow.camera.left = -3;
-      sun.shadow.camera.right = 3;
-      sun.shadow.camera.top = 3;
-      sun.shadow.camera.bottom = -3;
+      // boundaries of the scene in meters
+      sun.shadow.camera.left = -3.5;
+      sun.shadow.camera.right = 3.5;
+      sun.shadow.camera.top = 3.5;
+      sun.shadow.camera.bottom = -3.5;
   }
   return sun;
 };
 
 Viewer.prototype.createSpotLight = function(options){
-  var color = options.spot.color || '#ffffbb';
-  var intensity = options.spot.intensity || 0.9;
-  var pos = options.spot.pos || [0, 0, 6];
-  var target = options.spot.target || [-1, 1, 0];
+  var color = options.color || '#ffebc4';
+  var intensity = options.intensity || 0.2;
+  var pos = options.pos || [0, 0, 6];
+  var target = options.target || [-1, 1, 0];
   
   var spot = new THREE.SpotLight(
       parseInt(color.replace('#', '0x'), 16),
       intensity);
-  spot.position.set(pos[0],pos[1],pos[2]);
-  spot.target.position.set(target[0],target[1],target[2]);
-  spot.angle = options.spot.angle || 160;
-  if(options.spot.shadow) {
+  spot.angle = options.angle || Math.PI/3;
+  spot.distance = options.distance || 4.0;
+  spot.position.x = pos[0];
+  spot.position.y = pos[1];
+  spot.position.z = pos[2];
+  spot.target.position.x = target[0];
+  spot.target.position.y = target[1];
+  spot.target.position.z = target[2];
+  spot.target.updateMatrixWorld();
+  if(options.shadow) {
       spot.castShadow = true;
       spot.shadow.camera.near = 1;
       spot.shadow.camera.far = 10;
