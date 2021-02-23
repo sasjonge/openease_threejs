@@ -19,6 +19,7 @@ var CopyShader = require('./shader/CopyShader.js');
 var FXAAShader = require('./shader/FXAAShader.js');
 
 var EffectComposer = require('./EffectComposer.js');
+var EASEHighlighter = require('./EASEHighlighter.js');
 
 /**
  * A Viewer can be used to render an interactive 3D scene to a HTML5 canvas.
@@ -141,7 +142,7 @@ Viewer.prototype.createScene = function(options){
     fallbackTarget : this.cameraControls
   });
   // highlights the receiver of mouse events
-  this.highlighter = new ROS3D.Highlighter({mouseHandler : this.mouseHandler});
+  this.easeHighlighter = new EASEHighlighter({color : 0x70B85D});
 };
 
 Viewer.prototype.createHUDScene = function(options){
@@ -219,7 +220,7 @@ Viewer.prototype.setSimplePipeline = function(width, height){
   this.composer.passes = [];
 //   this.composer.addPass(new RenderPass(this.backgroundScene, this.backgroundCamera));
   this.composer.addPass(new RenderPass(this.scene, this.camera));
-  this.composer.addPass(new HighlightingPass(this.scene, this.camera, this.highlighter));
+  this.composer.addPass(new HighlightingPass(this.scene, this.camera, this.easeHighlighter));
   this.addFXAAPass(width, height, true);
 //   this.composer.addPass(new RenderPass(this.sceneOrtho, this.cameraOrtho));
 };
@@ -230,7 +231,7 @@ Viewer.prototype.setComicPipeline = function(width, height){
   this.composer.addPass(new RenderPass(this.scene, this.camera, outlinePass.mNormal));
   this.composer.addPass(new RenderPass(this.scene, this.camera, outlinePass.mDepth));
   this.composer.addPass(new CelShadingPass(this.scene, this.camera));
-//   this.composer.addPass(new HighlightingPass(this.scene, this.camera, this.highlighter));
+//   this.composer.addPass(new HighlightingPass(this.scene, this.camera, this.easeHighlighter));
   this.composer.addPass(outlinePass);
   this.addFXAAPass(width, height, true);
 };
@@ -319,7 +320,7 @@ Viewer.prototype.render = function(){
     else {
       this.renderer.render(this.backgroundScene, this.backgroundCamera);
       this.renderer.render(this.scene, this.camera);
-      this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+      this.easeHighlighter.renderHighlights(this.scene, this.renderer, this.camera);
       this.renderer.render(this.sceneOrtho, this.cameraOrtho);
     }
 };
@@ -461,10 +462,13 @@ Viewer.prototype.addEventListener = function(marker) {
 };
 
 Viewer.prototype.highlight = function(node) {
-    this.highlighter.hoverObjs[node.uuid] = node;
+    this.easeHighlighter.highlight(node);
 };
 Viewer.prototype.unhighlight = function(node) {
-    delete this.highlighter.hoverObjs[node.uuid];
+    this.easeHighlighter.unhighlight(node);
+};
+Viewer.prototype.clearHighlights = function() {
+    this.easeHighlighter.clearHighlights();
 };
 
 module.exports = Viewer;
